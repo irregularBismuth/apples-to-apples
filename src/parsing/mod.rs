@@ -1,2 +1,2 @@
-mod cards;
-mod config;
+pub mod cards;
+pub mod config;
