@@ -44,66 +44,74 @@ fn parse_red_card_raw(input: &str) -> IResult<&str, (String, String)> {
     ))
 }
 
-pub fn parse_green_card_line(line: &str, id: u32) -> Result<Option<GreenCard>> {
+fn parse_card_line<T, P, F>(
+    line: &str,
+    id: u32,
+    parser: fn(&str) -> IResult<&str, P>,
+    constructor: F,
+    card_type: &str,
+) -> Result<Option<T>>
+where
+    F: Fn(u32, P) -> T,
+{
     let trimmed = line.trim();
     if trimmed.is_empty() {
         return Ok(None);
     }
 
-    match parse_green_card_raw(trimmed) {
-        Ok((_, (name, synonyms))) => {
-            let card = GreenCard::new(id, name, synonyms.join(", "));
+    match parser(trimmed) {
+        Ok((_, parsed_data)) => {
+            let card = constructor(id, parsed_data);
             Ok(Some(card))
         }
-        Err(e) => anyhow::bail!("Failed to parse green card '{}': {}", trimmed, e),
+        Err(e) => anyhow::bail!("Failed to parse {} card '{}': {}", card_type, trimmed, e),
     }
 }
 
-pub fn parse_red_card_line(line: &str, id: u32) -> Result<Option<RedCard>> {
-    let trimmed = line.trim();
-    if trimmed.is_empty() {
-        return Ok(None);
+fn parse_green_card_line(line: &str, id: u32) -> Result<Option<GreenCard>> {
+    parse_card_line(
+        line,
+        id,
+        parse_green_card_raw,
+        |id, (name, synonyms): (String, Vec<String>)| GreenCard::new(id, name, synonyms.join(", ")),
+        "green",
+    )
+}
+
+fn parse_red_card_line(line: &str, id: u32) -> Result<Option<RedCard>> {
+    parse_card_line(
+        line,
+        id,
+        parse_red_card_raw,
+        |id, (name, description): (String, String)| RedCard::new(id, name, description),
+        "red",
+    )
+}
+
+async fn parse_cards<T>(
+    path: impl AsRef<Path>,
+    parser: fn(&str, u32) -> Result<Option<T>>,
+) -> Result<Vec<T>> {
+    let bytes = fs::read(path).await?;
+    let lines = bytes.split(|b| *b == b'\n');
+    let mut cards = Vec::new();
+    let mut id_counter = 0;
+
+    for line in lines {
+        let line = String::from_utf8_lossy(line);
+        if let Some(card) = parser(&line, id_counter)? {
+            cards.push(card);
+            id_counter += 1;
+        }
     }
 
-    match parse_red_card_raw(trimmed) {
-        Ok((_, (name, description))) => {
-            let card = RedCard::new(id, name, description);
-            Ok(Some(card))
-        }
-        Err(e) => anyhow::bail!("Failed to parse red card '{}': {}", trimmed, e),
-    }
+    Ok(cards)
 }
 
 pub async fn parse_green_cards(path: impl AsRef<Path>) -> Result<Vec<GreenCard>> {
-    let bytes = fs::read(path).await?;
-    let lines = bytes.split(|b| *b == b'\n');
-    let mut cards = Vec::new();
-    let mut id_counter = 1u32;
-
-    for line in lines {
-        let line = String::from_utf8_lossy(line);
-        if let Some(card) = parse_green_card_line(&line, id_counter)? {
-            cards.push(card);
-            id_counter += 1;
-        }
-    }
-
-    Ok(cards)
+    parse_cards(path, parse_green_card_line).await
 }
 
 pub async fn parse_red_cards(path: impl AsRef<Path>) -> Result<Vec<RedCard>> {
-    let bytes = fs::read(path).await?;
-    let lines = bytes.split(|b| *b == b'\n');
-    let mut cards = Vec::new();
-    let mut id_counter = 1u32;
-
-    for line in lines {
-        let line = String::from_utf8_lossy(line);
-        if let Some(card) = parse_red_card_line(&line, id_counter)? {
-            cards.push(card);
-            id_counter += 1;
-        }
-    }
-
-    Ok(cards)
+    parse_cards(path, parse_red_card_line).await
 }

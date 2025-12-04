@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use std::path::Path;
 use tokio::fs;
+
 #[non_exhaustive]
 #[derive(Deserialize)]
 pub struct Config {
