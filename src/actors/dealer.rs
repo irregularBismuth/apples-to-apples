@@ -19,7 +19,7 @@ struct DealerState {
 }
 
 #[repr(transparent)]
-struct Amount(pub NonZeroUsize);
+pub struct Amount(pub NonZeroUsize);
 
 pub enum DealerMsg {
     DealRedCards {
