@@ -1,2 +1,5 @@
-pub mod green;
-pub mod red;
+mod green;
+mod red;
+
+pub use green::GreenDeck;
+pub use red::RedDeck;

@@ -1,2 +1,2 @@
 pub mod cards;
-mod deck;
+pub mod deck;
