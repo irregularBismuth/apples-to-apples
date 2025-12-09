@@ -1,4 +1,5 @@
 use dsl_ractor::*;
+
 #[actor(msg=(),state=())]
 pub struct CardLoader {}
 impl CardLoader {

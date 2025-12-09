@@ -32,6 +32,7 @@ pub enum DealerMsg {
     },
     Shuffle,
 }
+use crate::core::deck::Deck;
 
 #[actor(msg=DealerMsg,state=DealerState,args=DealerArgs)]
 struct Dealer;
@@ -49,14 +50,13 @@ impl Dealer {
 
     actor_handle!({
         match msg {
-            DealerMsg::DealRedCards { count, reply } => {
-                todo!("deal cards")
-            }
+            DealerMsg::DealRedCards { count, reply } => {}
             DealerMsg::DealGreenCards { count, reply } => {
                 todo!("deal cards")
             }
             DealerMsg::Shuffle => {
-                todo!("shuffle decks");
+                state.green.shuffle();
+                state.red.shuffle();
             }
         }
         Ok(())
