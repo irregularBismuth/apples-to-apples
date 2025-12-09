@@ -10,3 +10,9 @@ impl RedDeck {
         Self(Vec::new())
     }
 }
+
+impl From<Vec<RedCard>> for RedDeck {
+    fn from(v: Vec<RedCard>) -> Self {
+        Self(v)
+    }
+}

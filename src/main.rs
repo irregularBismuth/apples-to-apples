@@ -17,8 +17,6 @@ impl App {
         let cards = parse_green_cards(gc).await?;
         let rc = "./assets/original/redApples.txt";
         let cards2 = parse_red_cards(rc).await?;
-        println!("{} {} {}", config.get(), cards.len(), cards2.len());
-
         Ok(())
     }
 

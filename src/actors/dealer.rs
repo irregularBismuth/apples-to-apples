@@ -38,15 +38,12 @@ struct Dealer;
 
 impl Dealer {
     actor_pre_start!({
-        let gc = "./assets/original/greenApples.txt";
-        let cards = parse_green_cards(gc).await?;
-        let rc = "./assets/original/redApples.txt";
-        let cards2 = parse_red_cards(rc).await?;
-
-        Ok(DealerState {
-            green: GreenDeck::new(),
-            red: RedDeck::new(),
-        })
+        const GC: &str = "./assets/original/greenApples.txt";
+        let cards = parse_green_cards(GC).await?;
+        let green: GreenDeck = cards.into();
+        let RC: &str = "./assets/original/redApples.txt";
+        let red: RedDeck = parse_red_cards(RC).await?.into();
+        Ok(DealerState { green, red })
     });
 
     actor_handle!({

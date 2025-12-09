@@ -10,3 +10,9 @@ impl GreenDeck {
         Self(Vec::new())
     }
 }
+
+impl From<Vec<GreenCard>> for GreenDeck {
+    fn from(v: Vec<GreenCard>) -> Self {
+        Self(v)
+    }
+}

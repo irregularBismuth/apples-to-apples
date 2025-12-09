@@ -1,4 +1,7 @@
-use crate::core::cards::{GreenCard, RedCard};
+use crate::core::{
+    cards::{GreenCard, RedCard},
+    deck::{GreenDeck, RedDeck},
+};
 use anyhow::Result;
 use nom::{
     IResult, Parser,
@@ -11,6 +14,12 @@ use nom::{
 };
 use std::path::Path;
 use tokio::fs;
+
+#[derive(Debug)]
+pub enum CardType {
+    Red,
+    Green,
+}
 
 fn parse_synonym(input: &str) -> IResult<&str, &str> {
     alt((take_until(","), take_until(")"))).parse(input)
@@ -46,13 +55,13 @@ fn parse_red_card_raw(input: &str) -> IResult<&str, (String, String)> {
 
 fn parse_card_line<T, P, F>(
     line: &str,
-    id: u32,
+    id: usize,
     parser: fn(&str) -> IResult<&str, P>,
     constructor: F,
-    card_type: &str,
+    card_type: CardType,
 ) -> Result<Option<T>>
 where
-    F: Fn(u32, P) -> T,
+    F: Fn(usize, P) -> T,
 {
     let trimmed = line.trim();
     if trimmed.is_empty() {
@@ -64,54 +73,55 @@ where
             let card = constructor(id, parsed_data);
             Ok(Some(card))
         }
-        Err(e) => anyhow::bail!("Failed to parse {} card '{}': {}", card_type, trimmed, e),
+        Err(e) => anyhow::bail!("Failed to parse {:?} card '{}': {}", card_type, trimmed, e),
     }
 }
 
-fn parse_green_card_line(line: &str, id: u32) -> Result<Option<GreenCard>> {
+fn parse_green_card_line(line: &str, id: usize) -> Result<Option<GreenCard>> {
     parse_card_line(
         line,
         id,
         parse_green_card_raw,
         |id, (name, synonyms): (String, Vec<String>)| GreenCard::new(id, name, synonyms.join(", ")),
-        "green",
+        CardType::Green,
     )
 }
 
-fn parse_red_card_line(line: &str, id: u32) -> Result<Option<RedCard>> {
+fn parse_red_card_line(line: &str, id: usize) -> Result<Option<RedCard>> {
     parse_card_line(
         line,
         id,
         parse_red_card_raw,
         |id, (name, description): (String, String)| RedCard::new(id, name, description),
-        "red",
+        CardType::Red,
     )
 }
 
 async fn parse_cards<T>(
     path: impl AsRef<Path>,
-    parser: fn(&str, u32) -> Result<Option<T>>,
+    parser: fn(&str, usize) -> Result<Option<T>>,
 ) -> Result<Vec<T>> {
     let bytes = fs::read(path).await?;
     let lines = bytes.split(|b| *b == b'\n');
-    let mut cards = Vec::new();
-    let mut id_counter = 0;
+    let result: Result<Vec<T>> = lines
+        .into_iter()
+        .enumerate()
+        .map(|(i, line)| {
+            let line = String::from_utf8_lossy(line);
+            parser(&line, i)
+        })
+        .filter_map(|res| res.transpose())
+        .collect::<Result<Vec<_>, _>>();
 
-    for line in lines {
-        let line = String::from_utf8_lossy(line);
-        if let Some(card) = parser(&line, id_counter)? {
-            cards.push(card);
-            id_counter += 1;
-        }
-    }
-
-    Ok(cards)
+    result
 }
 
-pub async fn parse_green_cards(path: impl AsRef<Path>) -> Result<Vec<GreenCard>> {
-    parse_cards(path, parse_green_card_line).await
+pub async fn parse_green_cards(path: impl AsRef<Path>) -> Result<GreenDeck> {
+    let deck = parse_cards(path, parse_green_card_line).await?;
+    Ok(deck.into())
 }
 
-pub async fn parse_red_cards(path: impl AsRef<Path>) -> Result<Vec<RedCard>> {
-    parse_cards(path, parse_red_card_line).await
+pub async fn parse_red_cards(path: impl AsRef<Path>) -> Result<RedDeck> {
+    let deck = parse_cards(path, parse_red_card_line).await?;
+    Ok(deck.into())
 }
