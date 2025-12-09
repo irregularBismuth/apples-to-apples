@@ -15,4 +15,19 @@ impl GreenCard {
             text: text.into(),
         }
     }
+
+    #[inline]
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    #[inline]
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    #[inline]
+    pub fn text(&self) -> &str {
+        &self.text
+    }
 }

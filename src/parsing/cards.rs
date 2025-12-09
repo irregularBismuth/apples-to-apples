@@ -15,12 +15,6 @@ use nom::{
 use std::path::Path;
 use tokio::fs;
 
-#[derive(Debug)]
-pub enum CardType {
-    Red,
-    Green,
-}
-
 fn parse_synonym(input: &str) -> IResult<&str, &str> {
     alt((take_until(","), take_until(")"))).parse(input)
 }
@@ -58,7 +52,6 @@ fn parse_card_line<T, P, F>(
     id: usize,
     parser: fn(&str) -> IResult<&str, P>,
     constructor: F,
-    card_type: CardType,
 ) -> Result<Option<T>>
 where
     F: Fn(usize, P) -> T,
@@ -73,7 +66,7 @@ where
             let card = constructor(id, parsed_data);
             Ok(Some(card))
         }
-        Err(e) => anyhow::bail!("Failed to parse {:?} card '{}': {}", card_type, trimmed, e),
+        Err(e) => anyhow::bail!("Failed to parse card '{}': {}", trimmed, e),
     }
 }
 
@@ -83,7 +76,6 @@ fn parse_green_card_line(line: &str, id: usize) -> Result<Option<GreenCard>> {
         id,
         parse_green_card_raw,
         |id, (name, synonyms): (String, Vec<String>)| GreenCard::new(id, name, synonyms.join(", ")),
-        CardType::Green,
     )
 }
 
@@ -93,7 +85,6 @@ fn parse_red_card_line(line: &str, id: usize) -> Result<Option<RedCard>> {
         id,
         parse_red_card_raw,
         |id, (name, description): (String, String)| RedCard::new(id, name, description),
-        CardType::Red,
     )
 }
 

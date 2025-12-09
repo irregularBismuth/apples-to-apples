@@ -43,6 +43,7 @@ impl Dealer {
         let green: GreenDeck = cards.into();
         let RC: &str = "./assets/original/redApples.txt";
         let red: RedDeck = parse_red_cards(RC).await?.into();
+
         Ok(DealerState { green, red })
     });
 

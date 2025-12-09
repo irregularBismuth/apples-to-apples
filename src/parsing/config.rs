@@ -2,6 +2,11 @@ use serde::Deserialize;
 use std::path::Path;
 use tokio::fs;
 
+const DEFAULT_FP_RED_CARDS: &str = "./assets/original/redApples.txt";
+const DEFAULT_FP_GREEN_CARDS: &str = "./assets/original/greenApples.txt";
+
+struct FileConfig {}
+
 #[non_exhaustive]
 #[derive(Deserialize)]
 pub struct Config {

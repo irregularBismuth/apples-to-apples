@@ -3,6 +3,8 @@ use apples_to_apples::parsing::{
     config::parse_config,
 };
 
+use apples_to_apples::core::deck::Deck;
+
 pub struct App {}
 
 impl App {
@@ -16,11 +18,13 @@ impl App {
         let gc = "./assets/original/greenApples.txt";
         let cards = parse_green_cards(gc).await?;
         let rc = "./assets/original/redApples.txt";
-        let cards2 = parse_red_cards(rc).await?;
+        let mut cards2 = parse_red_cards(rc).await?;
+        cards2.shuffle();
+
         Ok(())
     }
 
-    pub async fn run(mut self) -> anyhow::Result<()> {
+    pub async fn run(self) -> anyhow::Result<()> {
         Ok(())
     }
 }

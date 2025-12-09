@@ -1,4 +1,4 @@
 mod actors;
-mod core;
+pub mod core;
 mod networking;
 pub mod parsing;
