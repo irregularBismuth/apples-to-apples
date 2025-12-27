@@ -12,7 +12,10 @@ impl GameHandler {
     actor_pre_start!({ Ok(()) });
 
     actor_handle!({
-        match msg {}
+        match msg {
+            GameMsg::RoundStart => {}
+            GameMsg::CardPlayed => {}
+        }
         Ok(())
     });
 }
