@@ -34,18 +34,22 @@ pub enum DealerMsg {
 }
 use crate::core::deck::Deck;
 
+async fn load() -> anyhow::Result<DealerState> {
+    const GC: &str = "./assets/original/greenApples.txt";
+    let cards = parse_green_cards(GC).await?;
+    let green: GreenDeck = cards.into();
+    let RC: &str = "./assets/original/redApples.txt";
+    let red: RedDeck = parse_red_cards(RC).await?.into();
+    Ok(DealerState { green, red })
+}
+
 #[actor(msg=DealerMsg,state=DealerState,args=DealerArgs)]
 struct Dealer;
 
 impl Dealer {
     actor_pre_start!({
-        const GC: &str = "./assets/original/greenApples.txt";
-        let cards = parse_green_cards(GC).await?;
-        let green: GreenDeck = cards.into();
-        let RC: &str = "./assets/original/redApples.txt";
-        let red: RedDeck = parse_red_cards(RC).await?.into();
-
-        Ok(DealerState { green, red })
+        let state = load().await?;
+        Ok(state)
     });
 
     actor_handle!({

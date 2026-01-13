@@ -28,16 +28,13 @@
             clippy
             rustfmt
 
-            # Additional tools for development
             cargo-watch
             cargo-edit
 
-            # System dependencies your project might need
             openssl
             pkg-config
           ];
 
-          # Environment variables
           RUST_SRC_PATH = "${rustToolchain}/lib/rustlib/src/rust/library";
 
           shellHook = ''
