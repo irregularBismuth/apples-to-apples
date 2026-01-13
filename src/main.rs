@@ -1,3 +1,4 @@
+use apples_to_apples::networking::{gateway, protocol};
 use apples_to_apples::parsing::{
     cards::{parse_green_cards, parse_red_cards},
     config::parse_config,
@@ -19,6 +20,7 @@ impl App {
         let cards = parse_green_cards(gc).await?;
         let rc = "./assets/original/redApples.txt";
         let mut cards2 = parse_red_cards(rc).await?;
+        gateway::accept().await?;
         cards2.shuffle();
 
         Ok(())
