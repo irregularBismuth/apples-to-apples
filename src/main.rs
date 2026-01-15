@@ -4,29 +4,36 @@ use apples_to_apples::networking::{
     protocol::{ClientToServer, ServerToClient},
 };
 use apples_to_apples::parsing::Cli;
-use apples_to_apples::parsing::Mode;
 use apples_to_apples::parsing::{
     cards::{parse_green_cards, parse_red_cards},
     config::parse_config,
 };
+use apples_to_apples::setup_tracing;
+use clap::Parser;
 use futures::{SinkExt, StreamExt};
 use std::net::SocketAddr;
 use std::time::Duration;
 use tokio::net::TcpStream;
 use tokio::time::timeout;
 use tokio_util::codec::{Framed, LengthDelimitedCodec};
-
 pub struct App {
-    mode: Option<Mode>,
+    //    mode: Option<Mode>,
 }
 
 impl App {
     pub fn new() -> Self {
-        Self { mode: None }
+        //       Self { mode: None }
+        Self {}
     }
 
     pub async fn intilize(&mut self) -> anyhow::Result<()> {
-        let cli: Mode = Cli::parse();
+        setup_tracing()?;
+        let cli = Cli::parse();
+        if let Some(c) = cli.connect {
+            tracing::info!("thing");
+        } else {
+            tracing::info!("host");
+        }
         let path = "./Config.toml";
         let _config = parse_config(path).await?;
         let gc = "./assets/original/greenApples.txt";

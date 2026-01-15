@@ -31,20 +31,17 @@ fn parse_green_card_raw(input: &str) -> IResult<&str, (String, Vec<String>)> {
 
     let synonyms: Vec<String> = synonyms
         .iter()
-        .map(|s| String::from_utf8_lossy(s.as_bytes()).trim().to_string())
+        .map(|s| String::from_utf8_lossy(s.as_bytes()).trim().into())
         .collect();
 
-    Ok((input, (name.trim().to_string(), synonyms)))
+    Ok((input, (name.trim().into(), synonyms)))
 }
 
 fn parse_red_card_raw(input: &str) -> IResult<&str, (String, String)> {
     let (input, name) = delimited(char('['), take_until("]"), char(']')).parse(input)?;
     let (input, _) = (multispace0, char('-'), multispace0).parse(input)?;
     let (input, description) = rest.parse(input)?;
-    Ok((
-        input,
-        (name.trim().to_string(), description.trim().to_string()),
-    ))
+    Ok((input, (name.trim().into(), description.trim().into())))
 }
 
 fn parse_card_line<T, P, F>(
