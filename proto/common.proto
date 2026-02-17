@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package a2a.v1;
+
+message ErrorInfo {
+  uint32 code = 1;
+  string message = 2;
+}
+
+message PlayerRef {
+  uint64 player_id = 1;
+  string display_name = 2;
+}
+
+message RedCard {
+  uint32 id = 1;
+  string name = 2;
+  string text = 3;
+}
+
+message GreenCard {
+  uint32 id = 1;
+  string name = 2;
+  string text = 3;
+}

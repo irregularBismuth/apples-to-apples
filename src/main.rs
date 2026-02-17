@@ -1,8 +1,4 @@
 use apples_to_apples::core::deck::Deck;
-use apples_to_apples::networking::{
-    gateway::Gateway,
-    protocol::{ClientToServer, ServerToClient},
-};
 use apples_to_apples::parsing::Cli;
 use apples_to_apples::parsing::{
     cards::{parse_green_cards, parse_red_cards},
@@ -22,7 +18,6 @@ pub struct App {
 
 impl App {
     pub fn new() -> Self {
-        //       Self { mode: None }
         Self {}
     }
 
@@ -58,35 +53,6 @@ async fn run_client(addr: &SocketAddr) -> anyhow::Result<()> {
     let stream = TcpStream::connect(addr).await?;
     println!("connected to {addr}");
     let mut framed = Framed::new(stream, LengthDelimitedCodec::new());
-
-    let join = serde_json::to_vec(&ClientToServer::Join)?;
-    framed.send(join.into()).await?;
-    println!("sent Join");
-
-    for _ in 0..4 {
-        match timeout(Duration::from_secs(300), framed.next()).await {
-            Ok(Some(Ok(bytes))) => match serde_json::from_slice::<ServerToClient>(&bytes) {
-                Ok(msg) => println!("server {:?}", msg),
-                Err(e) => {
-                    println!("failed to parse server message: {e}");
-                    break;
-                }
-            },
-            Ok(Some(Err(e))) => {
-                println!("socket error: {e}");
-                break;
-            }
-            Ok(None) => {
-                println!("server closed connection");
-                break;
-            }
-            Err(_) => {
-                println!("timed out waiting for server");
-                break;
-            }
-        }
-    }
-
     Ok(())
 }
 
