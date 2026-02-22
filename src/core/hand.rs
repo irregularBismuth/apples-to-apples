@@ -1,4 +1,5 @@
 use crate::core::cards::RedCard;
+
 const HAND_SIZE: usize = 7;
 
 pub struct Hand {

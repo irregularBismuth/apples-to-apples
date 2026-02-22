@@ -3,3 +3,4 @@ mod human;
 mod id;
 
 pub use id::PlayerId;
+mod player;
